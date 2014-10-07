@@ -6,6 +6,8 @@ public class TweakTranslate : MonoBehaviour {
 	string[,,] tweak = new string[9,3,3];
 	//真名与假名的对应表，tweakName[i,0]为真名，其余为假名
 	string[,] tweakName = new string[28,4];
+	Vector2 mousePositionDown;
+	Vector2 mousePositionUp;
 	//旋转角度，每次只能旋转一个面
 	int turnAngle;
 	//是否处于旋转中
@@ -16,13 +18,38 @@ public class TweakTranslate : MonoBehaviour {
 	int turnType;
 	//选中面的某行或某列
 	int turnNum;
+	string hitName;
+	bool isTouched;
+	bool canMoved;
+	int accelerate;
+	void Awake()
+	{
+		GameObject btnLeft = GameObject.Find("uiRoot/Camera/leftHor");
+		GameObject btnRight = GameObject.Find("uiRoot/Camera/rightHor");
+		GameObject btnMiddle = GameObject.Find("uiRoot/Camera/middleVer");
+		GameObject btnReturn = GameObject.Find("uiRoot/Camera/return");
+		GameObject btnBegin = GameObject.Find("uiRoot/Camera/begin");
+		GameObject btnChoose = GameObject.Find("uiRoot/Camera/choose");
+		//设置这个按钮的监听，指向本类的ButtonClick方法中。
+		UIEventListener.Get(btnLeft).onClick = ButtonClick;
+		UIEventListener.Get(btnRight).onClick = ButtonClick;
+		UIEventListener.Get(btnMiddle).onClick = ButtonClick;
+		UIEventListener.Get(btnReturn).onClick = ButtonClick;
+		UIEventListener.Get(btnBegin).onClick = ButtonClick;
+		UIEventListener.Get(btnChoose).onClick = ButtonClick;
+	}
 
 	void Start () {
+
 		turnAngle = 0;
 		isTurn = false;
 		isDown = false;
-		turnType = 0;
-		turnNum = 0;
+		isTouched = false;
+		canMoved = false;
+		hitName = "";
+		turnType = 1;
+		turnNum = 1;
+		accelerate = 3;
 		tweakName [0, 0] = "Cube_1_1";
 		tweakName [0, 1] = "cubic_1_1";
 		tweakName [0, 2] = "cubic_2_3";
@@ -213,15 +240,15 @@ public class TweakTranslate : MonoBehaviour {
 		tweak [4,2,1] = "cubic_5_5";
 		tweak [4,2,2] = "cubic_5_2";
 
-		tweak [5,0,0] = "cubic_4_1";
-		tweak [5,0,1] = "cubic_4_2";
-		tweak [5,0,2] = "cubic_4_3";
+		tweak [5,0,0] = "cubic_4_7";
+		tweak [5,0,1] = "cubic_4_8";
+		tweak [5,0,2] = "cubic_4_9";
 		tweak [5,1,0] = "cubic_4_4";
 		tweak [5,1,1] = "cubic_4_5";
 		tweak [5,1,2] = "cubic_4_6";
-		tweak [5,2,0] = "cubic_4_7";
-		tweak [5,2,1] = "cubic_4_8";
-		tweak [5,2,2] = "cubic_4_9";
+		tweak [5,2,0] = "cubic_4_1";
+		tweak [5,2,1] = "cubic_4_2";
+		tweak [5,2,2] = "cubic_4_3";
 
 		tweak [6,0,0] = "cubic_3_1";
 		tweak [6,0,1] = "cubic_3_2";
@@ -239,9 +266,9 @@ public class TweakTranslate : MonoBehaviour {
 		tweak [7,1,0] = "cubic_2_5";
 		tweak [7,1,1] = "cubic_7_1";
 		tweak [7,1,2] = "cubic_4_5";
-		tweak [7,2,0] = "cubic_3_4";
-		tweak [7,2,1] = "cubic_3_5";
-		tweak [7,2,2] = "cubic_3_6";
+		tweak [7,2,0] = "cubic_2_6";
+		tweak [7,2,1] = "cubic_1_5";
+		tweak [7,2,2] = "cubic_4_4";
 
 		tweak [8,0,0] = "cubic_5_7";
 		tweak [8,0,1] = "cubic_5_8";
@@ -300,7 +327,7 @@ public class TweakTranslate : MonoBehaviour {
 	bool turn( int type , int turn , bool dir )
 	{
 		int layer = 0;
-		int angle = 2;
+		int angle = 1;
 		Vector3 turnDir = Vector3.left;
 		//type
 		// 1 , 0 , 1 , 2 
@@ -367,6 +394,7 @@ public class TweakTranslate : MonoBehaviour {
 		return false;
 	}
 
+
 	//刷新真名，假名不变
 	void refresh( int layer , bool dir )
 	{
@@ -420,44 +448,98 @@ public class TweakTranslate : MonoBehaviour {
 		}
 	}
 
+	//计算按钮的点击事件
+	void ButtonClick(GameObject button)
+	{
+		if (!isTurn) 
+		{
+			switch (button.transform.name) {
+			case "leftHor":
+					turnType = 3;
+					break;
+			case "rightHor":
+					turnType = 2;
+					break;
+			case "middleVer":
+					turnType = 1;
+					break;
+			case "return":
+					isDown = !isDown;
+					break;
+			case "begin":
+					isTurn = true;
+					break;
+			case "choose":
+					turnNum += 1;
+					if (turnNum > 3)
+							turnNum = 1;
+					break;
+			}
+		}
+	}
+
 	// Update is called once per frame
 	void Update () {
-//		tweak [0, 1].RotateAround ( tweak[0,0].position , Vector3.up , 5 );
-		if (Input.inputString == "j") {
-			if (!isTurn)
-			{
-				isTurn = true;
-				turnType = 1;
-				turnNum = 3;
-			}
-		}
-		if (Input.inputString == "k") {
-			if (!isTurn)
-			{
-				isTurn = true;
-				turnType = 2;
-				turnNum = 1;
-			}
-		}
-		if (Input.inputString == "l") {
-			if (!isTurn)
-			{
-				isTurn = true;
-				turnType = 3;
-				turnNum = 3;
-			}
-		}
-		if (Input.inputString == "z") {
-			if (!isTurn)
-			{
-//				isTurn = true;
-				isDown = !isDown;
-			}
-		}
+//		print(Input.touchCount);	
+//		if (Input.touchCount > 0) 
+//		{
+//			string name = "";
+//			print (Input.touchCount);
+//			if (Input.GetTouch (0).phase == TouchPhase.Began) 
+//			{
+//				RaycastHit hit;
+//				// 从目前的触摸坐标，构建射线
+//				Ray ray = Camera.main.ScreenPointToRay (Input.GetTouch (0).position);
+//				
+//				if (Physics.Raycast (ray, out hit, 100)) {
+//					isTouched = true;
+//					hitName = hit.transform.name;
+//					mousePositionDown = Input.GetTouch (0).position;
+//					print ( "getTouch down " + name + " " + mousePositionDown.ToString() );
+//				}
+//			}
+//			if (Input.GetTouch (0).phase == TouchPhase.Moved) 
+//			{
+//				canMoved = true;
+//				print ( "getTouch moved " );
+//			}
+//			if (Input.GetTouch (0).phase == TouchPhase.Ended && canMoved && isTouched ) 
+//			{
+//				print ( "getTouch Ended " );
+//				mousePositionUp = Input.GetTouch (0).position;
+//				float angle = 0;
+//				Vector3 from = new Vector3( mousePositionUp.x , mousePositionUp.y , 0);
+//				Vector3 to 	 = new Vector3( mousePositionDown.x , mousePositionDown.y , 0); 
+//				if ( Vector3.Cross( from , to ).z > 0 )
+//				{
+//					print ("mouse angle is " + Vector2.Angle( mousePositionUp , mousePositionDown ).ToString() );
+//					angle =  Vector2.Angle( mousePositionUp , mousePositionDown );
+//				}
+//				else
+//				{
+//					print ("mouse angle is " + (- Vector2.Angle( mousePositionUp , mousePositionDown )).ToString() );
+//					angle = -Vector2.Angle( mousePositionUp , mousePositionDown );
+//				}
+//				print ( "getTouch Ended " + mousePositionUp.ToString() + "  " + mousePositionDown.ToString() );
+//				print ( "getTouch Ended " + angle.ToString() + "  " + angle.ToString() );
+//				turnByName( hitName , angle );
+//				canMoved = false;
+//				isTouched = false;
+//				hitName = "";
+//				mousePositionDown = mousePositionUp;
+//			}
+//		}
 		if (isTurn) {
-			if (turn ( turnType , turnNum , isDown ) )
+			if ( accelerate > 0 )
 			{
-				isTurn = false;
+				for( int i = 0 ; i < accelerate ; i++ )
+				{
+					if (turn ( turnType , turnNum , isDown ) )
+					{
+						isTurn = false;
+						break;
+					}
+				}
 			}
 		}
 	}
